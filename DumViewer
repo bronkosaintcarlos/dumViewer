@@ -1,0 +1,115 @@
+import pygame
+import math
+import csv
+
+# fixed size of all robots
+robotDimension = 25
+
+# colors
+robot1Color = (100, 100, 255)
+robot2Color = (225, 100, 100)
+backgroundColor = (66, 244, 146)
+bridgeColor = (200, 200, 200)
+
+# bridge parameters
+bridgeLength = 800
+bridgePivotLocation = (450, 600)
+bridgeThickness = 10
+
+# parameters to be passed in
+bridgeAngle = math.pi/50.0
+# distance from center pivot, positive is to right
+robotPosition = -250
+
+class robot():
+    xPos = 0
+    yPos = 0
+    color = ()
+    robotPosition = 0
+    def __init__(self, color):
+        self.color = color
+    def setRobotPosition(self, position):
+        self.robotPosition = position
+
+def drawBridge(surface, angle):
+    # draw the pivot
+    pivotRadius = 10
+    pygame.draw.circle(surface, bridgeColor, (bridgePivotLocation[0], bridgePivotLocation[1] + pivotRadius), pivotRadius, 10)
+
+    startPos = (bridgePivotLocation[0] - math.cos(-angle) * bridgeLength/2,
+                bridgePivotLocation[1] - math.sin(-angle) * bridgeLength/2)
+
+    endPos = (bridgePivotLocation[0] + math.cos(-angle) * bridgeLength / 2,
+                bridgePivotLocation[1] + math.sin(-angle) * bridgeLength / 2)
+
+    pygame.draw.line(surface, bridgeColor, startPos, endPos, bridgeThickness)
+
+def main():
+
+
+
+    pygame.init()
+    pygame.display.set_caption("dumViewer")
+
+    screen = pygame.display.set_mode((900, 900))
+
+    running = True
+
+    # create the two robots
+    robot1 = robot(color = robot1Color)
+    robot2 = robot(color = robot2Color)
+
+    pygame.display.update()
+    # main loop
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                # stop checking for events
+                running = False
+
+        # clear screen
+        with open("dum3.csv", 'r') as csvfile:
+            csvReader = csv.reader(csvfile)
+
+            next(csvReader)
+            next(csvReader)
+            next(csvReader)
+            next(csvReader)
+            next(csvReader)
+            next(csvReader)
+            next(csvReader)
+            next(csvReader)
+
+            for csvLine in csvReader :
+                csvTime = csvLine[0]
+                csvRobotPos = float(csvLine[4])
+                bridgeAngle = float(csvLine[1])
+
+                print(csvTime)
+
+                screen.fill(backgroundColor)
+
+                robot1.setRobotPosition(position = -csvRobotPos * 400)
+                robot2.setRobotPosition(position = 700)
+
+                # update graphical robot position
+                robot1.xPos = bridgePivotLocation[0] + math.cos(-bridgeAngle)*robot1.robotPosition
+                robot1.yPos = bridgePivotLocation[1] + math.sin(-bridgeAngle)*robot1.robotPosition - robotDimension - bridgeThickness/2
+
+                robot2.xPos = bridgePivotLocation[0] + math.cos(-bridgeAngle)*robot2.robotPosition
+                robot2.yPos = bridgePivotLocation[1] + math.sin(-bridgeAngle)*robot2.robotPosition - robotDimension - bridgeThickness/2
+
+                # update and draw the bridge
+                drawBridge(screen, bridgeAngle)
+
+                # draw robots
+                pygame.draw.circle(screen, robot1.color, [int(robot1.xPos), int(robot1.yPos)], robotDimension, 10)
+                # pygame.draw.circle(screen, robot2.color, [int(robot2.xPos), int(robot2.yPos)], robotDimension, 10)
+
+
+                # display everything
+                pygame.display.update()
+
+if __name__ == "__main__":
+    # call the main function
+    main()
